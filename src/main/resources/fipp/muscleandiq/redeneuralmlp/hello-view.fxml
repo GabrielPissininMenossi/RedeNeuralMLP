@@ -1,16 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="fipp.muscleandiq.redeneuralmlp.HelloController">
+<?import javafx.scene.control.ToggleGroup?>
+<VBox alignment="CENTER" minHeight="782.0" minWidth="778.0" spacing="20.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fipp.muscleandiq.redeneuralmlp.HelloController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
+
+    <VBox alignment="CENTER" spacing="5" style="-fx-background-color: white;">
+        <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="FACULDADE DE INFORMÁTICA DE PRESIDENTE PRUDENTE" />
+        <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="INTELIGÊNCIA ARTIFICIAL" />
+        <Label style="-fx-font-size: 20px; -fx-text-fill: green; -fx-font-weight: bold;" text="REDES NEURAIS" />
+    </VBox>
+
+
+    <TitledPane expanded="true" text="Configurar número de neurônios">
+        <GridPane hgap="15" vgap="10">
+            <padding>
+                <Insets bottom="10" left="10" right="10" top="10" />
+            </padding>
+
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" minWidth="150" />
+                <ColumnConstraints minWidth="100" />
+                <ColumnConstraints halignment="RIGHT" minWidth="150" />
+                <ColumnConstraints minWidth="100" />
+            </columnConstraints>
+
+            <Label text="Camada de Entrada:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="tfCamadaEntrada" disable="true" promptText="6" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+            <Label text="Camada de Saída:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            <TextField fx:id="tfCamadaSaida" disable="true" promptText="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+            <Label text="Camada Oculta:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+            <TextField fx:id="tfCamadaOculta" promptText="5" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+            <Label text="Valor do Erro:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+            <TextField fx:id="tfErro" promptText="0.00001" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+            <Label text="N:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <TextField fx:id="tfN" promptText="0.2" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+
+            <Label text="Número de Iterações:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <TextField fx:id="tfNumIteracao" promptText="2000" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+         <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+         </rowConstraints>
+        </GridPane>
+    </TitledPane>
+
+    <TitledPane expanded="true" text="Função de Transferência">
+        <HBox spacing="20">
+            <padding>
+                <Insets bottom="10" left="10" right="10" top="10" />
+            </padding>
+
+            <!-- Define o grupo -->
+            <fx:define>
+                <ToggleGroup fx:id="grupoFuncao" />
+            </fx:define>
+
+            <RadioButton fx:id="idLinear" text="Linear" toggleGroup="${grupoFuncao}" />
+            <RadioButton fx:id="idLogistica" text="Logística" toggleGroup="${grupoFuncao}" />
+            <RadioButton fx:id="idHiperbolica" text="Hiperbólica" toggleGroup="${grupoFuncao}" />
+        </HBox>
+    </TitledPane>
+
+
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+        <Button onAction="#onCarregarArquivo" text="Carregar Arquivo" />
+        <TextField fx:id="tfCaminhoArquivo" disable="true" prefWidth="600" text="D:\FIPP\IA\TrabRedesNeurais\TRABALHO_REDESNEURAIS_BaseDados_TreinoTeste" />
+    </HBox>
+
+
+    <TableView prefHeight="250" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn prefWidth="80" text="X1" />
+            <TableColumn prefWidth="80" text="X2" />
+            <TableColumn prefWidth="80" text="X3" />
+            <TableColumn prefWidth="80" text="X4" />
+            <TableColumn prefWidth="80" text="X5" />
+            <TableColumn prefWidth="80" text="X6" />
+            <TableColumn prefWidth="80" text="Classe" />
+        </columns>
+    </TableView>
+
+
+    <HBox alignment="CENTER_RIGHT">
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+        <Button prefWidth="100" text="Avançar" />
+    </HBox>
 </VBox>
