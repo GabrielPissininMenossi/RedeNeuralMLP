@@ -60,7 +60,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>fipp.muscleandiq.redeneuralmlp/fipp.muscleandiq.redeneuralmlp.HelloApplication
+                            <mainClass>fipp.muscleandiq.redeneuralmlp/fipp.muscleandiq.redeneuralmlp.MainApplication
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>

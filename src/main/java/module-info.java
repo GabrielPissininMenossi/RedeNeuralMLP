@@ -4,5 +4,6 @@ module fipp.muscleandiq.redeneuralmlp {
 
 
     opens fipp.muscleandiq.redeneuralmlp to javafx.fxml;
+    opens fipp.muscleandiq.redeneuralmlp.entities to javafx.base;
     exports fipp.muscleandiq.redeneuralmlp;
 }
