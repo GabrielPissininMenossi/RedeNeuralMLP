@@ -39,10 +39,102 @@ public class MainController {
     @FXML
     public TableView<Entrada> tableView;
     private List<Entrada> entradaList = new ArrayList<>();
-    private int atributos = 0;
+    private int atributos = 0; // entradas
     private int saidas = 0;
-    private int qtdeNeuronios = 0;
+    private int qtdeNeuroniosOcultos = 0;
+    private double[][] mEntradaOculta;
+    private double[][] mOcultaSaida;
+    private double[] vetNetOculto;
+    private double[] vetNetSaida;
+    private double[] vetIOculto;
+    private double[] vetISaida;
+    private void gerarMatrizes()
+    {
+        double peso;
+        mEntradaOculta = new double[atributos][qtdeNeuroniosOcultos];
+        mOcultaSaida = new double[qtdeNeuroniosOcultos][saidas];
+        for (int i = 0; i < atributos; i++)
+        {
+            for (int j = 0; j < qtdeNeuroniosOcultos; j++)
+            {
+                peso = Math.random();
+                mEntradaOculta[i][j] = peso;
+            }
+        }
+        for (int i = 0; i < qtdeNeuroniosOcultos; i++)
+        {
+            for (int j = 0; j < saidas; j++)
+            {
+                peso = Math.random();
+                mOcultaSaida[i][j] = peso;
+            }
+        }
+    }
+    private double calculaErro()
+    {
+        return 0; //teste
+    }
+    private int buscarIndice(String classe)
+    {
+//        int i = 0;
+//        while(i < sai)
+//        return i + 1;
+    }
+    private void treinarLinha(Entrada entrada)
+    {
+        double soma;
+        List<Double> entradas = entrada.getEntradas();
+        // net e i camada oculta
+        for (int c = 0; c < qtdeNeuroniosOcultos; c++)
+        {
+            soma = 0;
+            for (int l = 0; l < atributos; l++)
+            {
+                soma = soma + entradas.get(l) * mEntradaOculta[c][l];
 
+            }
+            vetNetOculto[c] = soma;
+            vetIOculto[c] = soma/2;
+        }
+
+        // net e i da camada saida
+        for (int c = 0; c < saidas; c++)
+        {
+            soma = 0;
+            for (int l = 0; l < qtdeNeuroniosOcultos; l++)
+            {
+                soma = soma + vetIOculto[l] * mOcultaSaida[c][l];
+            }
+            vetNetSaida[c] = soma;
+            vetISaida[c] = soma/2;
+        }
+
+        //erro neurônios camada de saída
+        //for(int )
+    }
+    private void treinamento()
+    {
+        gerarMatrizes();
+        int i = 0;
+        tfErro.setText("0.00001");
+        double erro = 1;
+        while (i < Integer.parseInt(tfNumIteracao.getText().toString()) && erro > Double.parseDouble(tfErro.getText().toString()))
+        {
+            int j = 0;
+            while (j < entradaList.size())
+            {
+                Entrada entrada = entradaList.get(j);
+                treinarLinha(entrada);
+                j++;
+            }
+            erro = calculaErro();
+            i++;
+        }
+    }
+    private void calcularNeuroniosOcultos()
+    {
+        qtdeNeuroniosOcultos = (int) Math.ceil((atributos + saidas)/2.0);
+    }
     private void preencherTabela()
     {
         int i = 0, j;
@@ -107,7 +199,6 @@ public class MainController {
             String linha = bufferedReader.readLine();
             String []cabecalho = linha.split(",");
             List<String> cabecalhoLista = Arrays.asList(cabecalho);
-
             for (int i=0; i<cabecalhoLista.size(); i++)
             {
                 final int index = i;
@@ -125,19 +216,24 @@ public class MainController {
                 tableView.getColumns().add(column);
             }
             linha = bufferedReader.readLine();
+            List<String> saidasList = new ArrayList<>();
             while (linha != null)
             {
                 String[] partes = linha.split(",");
                 List<Double> entradas = new ArrayList<>();
                 String classe;
+
                 for (int i=0; i<partes.length - 1; i++)
                 {
                     entradas.add(Double.parseDouble(partes[i]));
                 }
                 classe = partes[partes.length - 1];
+                if (!saidasList.contains(classe))
+                    saidasList.add(classe);
                 entradaList.add(new Entrada(entradas, classe));
                 linha = bufferedReader.readLine();
             }
+            saidas = saidasList.size();
             bufferedReader.close();
 
         }catch (Exception e){
@@ -162,8 +258,12 @@ public class MainController {
             tableView.getItems().clear();
             tableView.getColumns().clear();
             entradaList.clear();
+            atributos = 0;
+            saidas = 0;
             lerArquivo(file);
             preencherTabela();
+            calcularNeuroniosOcultos();
+            System.out.println(qtdeNeuroniosOcultos);
         }
 
     }
