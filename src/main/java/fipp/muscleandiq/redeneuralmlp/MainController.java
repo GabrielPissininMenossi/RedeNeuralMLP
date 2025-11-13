@@ -53,6 +53,14 @@ public class MainController {
     private double[] vetISaida;
     private double[] vetErroSaida;
     private double[] vetErroOculta;
+    @FXML
+    public void initialize()
+    {
+        tfErro.setText("0.00001");
+        tfNumIteracao.setText("5000");
+        tfN.setText("0.1");
+        idLinear.setSelected(true);
+    }
     private void gerarMatrizes()
     {
         double peso;
@@ -153,11 +161,11 @@ public class MainController {
             soma = 0;
             for (int l = 0; l < atributos; l++)
             {
-                soma = soma + entradas.get(l) * mEntradaOculta[c][l];
+                soma = soma + entradas.get(l) * mEntradaOculta[l][c];
 
             }
             vetNetOculto[c] = soma;
-            vetIOculto[c] = soma/2;
+            vetIOculto[c] = fnet(soma);
         }
 
         // net e i da camada saida
@@ -169,7 +177,7 @@ public class MainController {
                 soma = soma + vetIOculto[l] * mOcultaSaida[l][c];
             }
             vetNetSaida[c] = soma;
-            vetISaida[c] = soma/2;
+            vetISaida[c] = fnet(soma);
 
         }
         //erro neurônios camada de saída
@@ -193,9 +201,9 @@ public class MainController {
             for (int j = 0; j < saidas; j++)
             {
                 // revisar
-                erro = erro + (vetErroSaida[j] * mOcultaSaida[i][j]) * fnetDerivada(vetNetOculto[i]);
+                erro = erro + (vetErroSaida[j] * mOcultaSaida[i][j]) ;
             }
-            vetErroOculta[i] = erro;
+            vetErroOculta[i] = erro * fnetDerivada(vetNetOculto[i]);
         }
 
         // atualizar pesos das arestas da camada de oculta para saida
@@ -246,29 +254,32 @@ public class MainController {
     {
         gerarMatrizes();
         int i = 0;
-        tfErro.setText("0.00001");
-        tfN.setText("0.2");
-        tfNumIteracao.setText("5000");
-        idLinear.setSelected(true);
-        double erro = 1;
-        while (i < Integer.parseInt(tfNumIteracao.getText().toString()) && erro > Double.parseDouble(tfErro.getText().toString()))
+        double erroEpoca = 1.0;
+
+        while (i < Integer.parseInt(tfNumIteracao.getText().toString()) && erroEpoca > Double.parseDouble(tfErro.getText().toString()))
         {
             int j = 0;
-            while (j < entradaList.size() && erro > Double.parseDouble(tfErro.getText().toString()))
+            double erroTotalEpoca = 0;
+            while (j < entradaList.size())
             {
                 Entrada entrada = entradaList.get(j);
                 treinarLinha(entrada);
-                erro = calculaErro(entrada);
+                erroTotalEpoca = erroTotalEpoca + calculaErro(entrada);
                 //exibirMatrizEntradaOculta();
                 //System.out.print("\n");
                 //exibirMatrizOcultaSaida();
                 //System.out.print("\n");
                 j++;
             }
-
-            System.out.printf("Erro: %.4f\n", erro);
+            erroEpoca = erroTotalEpoca / entradaList.size();
+            System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
             i++;
         }
+        System.out.println(entradaList.size());
+        System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText("Treinamento Finalizado");
+        alert.showAndWait();
     }
     private void calcularNeuroniosOcultos()
     {
@@ -403,9 +414,17 @@ public class MainController {
             lerArquivo(file);
             preencherTabela();
             calcularNeuroniosOcultos();
-            treinamento();
+            tfCamadaEntrada.setText(""+atributos);
+            tfCamadaSaida.setText(""+saidas);
+            tfCamadaOculta.setText(""+qtdeNeuroniosOcultos);
+
 
         }
 
+    }
+
+    public void onAvancar(ActionEvent actionEvent)
+    {
+        treinamento();
     }
 }

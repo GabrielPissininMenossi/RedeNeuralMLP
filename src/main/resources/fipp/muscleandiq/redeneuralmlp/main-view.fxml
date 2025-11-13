@@ -41,22 +41,22 @@
             </columnConstraints>
 
             <Label text="Camada de Entrada:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <TextField fx:id="tfCamadaEntrada" disable="true" promptText="6" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <TextField fx:id="tfCamadaEntrada" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
             <Label text="Camada de Saída:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="tfCamadaSaida" disable="true" promptText="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TextField fx:id="tfCamadaSaida" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
             <Label text="Camada Oculta:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-            <TextField fx:id="tfCamadaOculta" promptText="5" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <TextField fx:id="tfCamadaOculta" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
             <Label text="Valor do Erro:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <TextField fx:id="tfErro" promptText="0.00001" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+            <TextField fx:id="tfErro" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
             <Label text="N:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <TextField fx:id="tfN" promptText="0.2" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <TextField fx:id="tfN" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
             <Label text="Número de Iterações:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <TextField fx:id="tfNumIteracao" promptText="2000" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <TextField fx:id="tfNumIteracao" GridPane.columnIndex="3" GridPane.rowIndex="2" />
          <rowConstraints>
             <RowConstraints />
             <RowConstraints />
@@ -76,7 +76,7 @@
                 <ToggleGroup fx:id="grupoFuncao" />
             </fx:define>
 
-            <RadioButton fx:id="idLinear" text="Linear" toggleGroup="${grupoFuncao}" />
+            <RadioButton fx:id="idLinear" selected="true" text="Linear" toggleGroup="${grupoFuncao}" />
             <RadioButton fx:id="idLogistica" text="Logística" toggleGroup="${grupoFuncao}" />
             <RadioButton fx:id="idHiperbolica" text="Hiperbólica" toggleGroup="${grupoFuncao}" />
         </HBox>
@@ -100,6 +100,6 @@
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
-        <Button prefWidth="100" text="Avançar" />
+        <Button onAction="#onAvancar" prefWidth="100" text="Avançar" />
     </HBox>
 </VBox>
