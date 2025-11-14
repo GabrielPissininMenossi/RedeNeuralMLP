@@ -56,6 +56,7 @@ public class MainController {
     private double[] vetISaida;
     private double[] vetErroSaida;
     private double n;
+    private int[][] matrizConfusao;
 
     @FXML
     public void initialize()
@@ -215,25 +216,23 @@ public class MainController {
             vetErroOculta[l] = erro * fnetDerivada(vetNetOculto[l]);
         }
 
+        //passo 8 -> atualiza pesos arestas de camada oculta para a de saída
         // atualizar pesos das arestas da camada de oculta para saida
-        double novoPeso;
-        double n = Double.parseDouble(tfN.getText().toString());
         for (int i = 0; i < qtdeNeuroniosOcultos; i++)
         {
             for (int j = 0; j < saidas; j++)
             {
-                novoPeso = mOcultaSaida[i][j] + n * vetErroSaida[j] * vetIOculto[i];
-                mOcultaSaida[i][j] = novoPeso;
+                mOcultaSaida[i][j] = mOcultaSaida[i][j] + n * vetErroSaida[j] * vetIOculto[i];
             }
         }
 
+        //passo 9 -> atualiza pesos arestas de camada de entrada e oculta
         // atualizar pesos das arestas da camada de entrada para oculta
         for (int i = 0; i < atributos; i++)
         {
             for(int j = 0; j < qtdeNeuroniosOcultos; j++)
             {
-                novoPeso = mEntradaOculta[i][j] + n * vetErroOculta[j] * entradas.get(i);
-                mEntradaOculta[i][j] = novoPeso;
+                mEntradaOculta[i][j] = mEntradaOculta[i][j] + n * vetErroOculta[j] * entradas.get(i);
             }
         }
     }
@@ -270,6 +269,7 @@ public class MainController {
         double erroEpoca = 1.0; //deixa um erro grande para
         double erroEsperado = Double.parseDouble(tfErro.getText().toString()); //pega o erro setado no front
         int epocas = Integer.parseInt(tfNumIteracao.getText().toString());
+        n = Double.parseDouble(tfN.getText().toString());
 
         // fica treinando enquanto o erro for maior, ou a quantidade de épocas ainda n foi atingida
         while (i < epocas && erroEpoca > erroEsperado)
@@ -278,16 +278,14 @@ public class MainController {
             double erroTotalEpoca = 0;
             while (j < entradaList.size())
             {
-                Entrada entrada = entradaList.get(j); // passo 1 -> pega as entradas
+                // passo 1 -> pega as entradas
+                Entrada entrada = entradaList.get(j);
 
-                //passos 2 até
+                //passos 2 até 9
                 treinarLinha(entrada);
 
+                //passo 10 -> calcula o erra da rede
                 erroTotalEpoca = erroTotalEpoca + calculaErro(entrada);
-                //exibirMatrizEntradaOculta();
-                //System.out.print("\n");
-                //exibirMatrizOcultaSaida();
-                //System.out.print("\n");
                 j++;
             }
             erroEpoca = erroTotalEpoca / entradaList.size(); //atualizar o erro gerado na época
@@ -301,6 +299,34 @@ public class MainController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText("Treinamento Finalizado");
         alert.showAndWait();
+    }
+
+    private void testarEntradas()
+    {
+        gerarMatrizConfusao(); //para visualizar os erros e acertos do treinamento da rede neural
+        int i=0;
+        int posClasse, classeResultado;
+        while(i < entradaList.size())
+        {
+            //pegar a linha atual
+            Entrada entrada = entradaList.get(i);
+            //encontrar a posição na linha da matriz de confusão
+            posClasse = buscarIndice(entrada.getClasse());
+            classeResultado = testarLinha(entrada); //essa função que contém toda a complexidade de um teste da rede neural
+            //realizo a soma do que conseguiu chegar de resultado
+            matrizConfusao[posClasse][classeResultado] = matrizConfusao[posClasse][classeResultado]+1;
+            i++;
+        }
+    }
+
+    private void gerarMatrizConfusao()
+    {
+        matrizConfusao = new int[saidas][saidas];
+    }
+
+    private int testarLinha(Entrada entrada)
+    {
+        return 0; //temporário
     }
 
     private void calcularQtdeNeuroniosOcultos()
