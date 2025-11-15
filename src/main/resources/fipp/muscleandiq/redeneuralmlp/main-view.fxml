@@ -88,18 +88,26 @@
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
-        <Button onAction="#onAbrir" text="Carregar Arquivo" />
-        <TextField id="tfCaminho" fx:id="tfCaminhoArquivo" disable="true" prefWidth="600" />
+        <Button onAction="#onAbrirTreino" text="Carregar Arquivo Treinamento" />
+        <TextField fx:id="tfCaminhoArquivoTreino" disable="true" prefWidth="600" />
     </HBox>
 
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+        <Button onAction="#onAbrirTeste" text="Carregar Arquivo Teste" />
+        <TextField fx:id="tfCaminhoArquivoTeste" disable="true" prefWidth="600" />
+    </HBox>
 
     <TableView fx:id="tableView" prefHeight="250" VBox.vgrow="ALWAYS" />
-
 
     <HBox alignment="CENTER_RIGHT">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
-        <Button onAction="#onAvancar" prefWidth="100" text="Avançar" />
+        <Button onAction="#onAvancar" prefWidth="100" text="Treinar" />
+        <Button onAction="#onTestarEntrada" prefWidth="100" text="Testar" />
     </HBox>
+
 </VBox>

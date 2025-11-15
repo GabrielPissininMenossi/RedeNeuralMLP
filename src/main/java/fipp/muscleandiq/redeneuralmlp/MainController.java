@@ -37,12 +37,20 @@ public class MainController {
     @FXML
     private TextField tfNumIteracao;
     @FXML
-    private TextField tfCaminhoArquivo;
+    private TextField tfCaminhoArquivoTreino;
+    @FXML
+    private TextField tfCaminhoArquivoTeste;
     @FXML
     public TableView<Entrada> tableView;
 
     //variáveis
-    private List<Entrada> entradaList = new ArrayList<>();
+    private List<Entrada> entradaList = new ArrayList<>();//lista de treinamento
+
+    // Min/max do treinamento da normalização, pois no teste deve ser utilizado esses valores
+    private double[] minTreino;
+    private double[] maxTreino;
+
+
     private List<String> saidasList = new ArrayList<>();
     private int atributos = 0; // qtde de entradas
     private int saidas = 0; // qtde de neuronios de saida
@@ -260,6 +268,16 @@ public class MainController {
             System.out.print("\n");
         }
     }
+    private void exibirMatrizConfusao(){
+        for (int l = 0; l < saidas; l++)
+        {
+            for (int c = 0; c < saidas; c++)
+            {
+                System.out.printf("%d ", matrizConfusao[l][c]);
+            }
+            System.out.print("\n");
+        }
+    }
 
     //treinamento da rede neural
     private void treinamento()
@@ -294,7 +312,7 @@ public class MainController {
         }
 
         // exibições
-        System.out.println(entradaList.size());
+        //System.out.println(entradaList.size());
         System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText("Treinamento Finalizado");
@@ -317,6 +335,8 @@ public class MainController {
             matrizConfusao[posClasse][classeResultado] = matrizConfusao[posClasse][classeResultado]+1;
             i++;
         }
+        exibirMatrizConfusao();
+
     }
 
     private void gerarMatrizConfusao()
@@ -326,8 +346,50 @@ public class MainController {
 
     private int testarLinha(Entrada entrada)
     {
-        return 0; //temporário
+        List<Double> entradas = entrada.getEntradas();
+        double soma;
+
+        // ---- PASSO 1: Calcular nets da camada oculta ----
+        for (int c = 0; c < qtdeNeuroniosOcultos; c++)
+        {
+            soma = 0;
+            for (int l = 0; l < atributos; l++)
+            {
+                soma += entradas.get(l) * mEntradaOculta[l][c];
+            }
+            vetNetOculto[c] = soma;
+            vetIOculto[c] = fnet(soma);
+        }
+
+        // ---- PASSO 2: Calcular nets da camada de saída ----
+        for (int c = 0; c < saidas; c++)
+        {
+            soma = 0;
+            for (int l = 0; l < qtdeNeuroniosOcultos; l++)
+            {
+                soma += vetIOculto[l] * mOcultaSaida[l][c];
+            }
+            vetNetSaida[c] = soma;
+            vetISaida[c] = fnet(soma);
+        }
+
+
+        // ---- PASSO 3: Achar o índice do neurônio com maior saída ----
+        int indiceMaior = 0;
+        double maior = vetISaida[0];
+
+        for (int k = 1; k < saidas; k++)
+        {
+            if (vetISaida[k] > maior)
+            {
+                maior = vetISaida[k];
+                indiceMaior = k;
+            }
+        }
+
+        return indiceMaior;
     }
+
 
     private void calcularQtdeNeuroniosOcultos()
     {
@@ -391,85 +453,155 @@ public class MainController {
         return menor;
     }
 
-    private void lerArquivo(File file)
+
+    private void lerArquivo(File file, boolean isTreino)
     {
-        try{
+        try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
             String linha = bufferedReader.readLine();
-            String []cabecalho = linha.split(",");
-            List<String> cabecalhoLista = Arrays.asList(cabecalho);
-            for (int i=0; i<cabecalhoLista.size(); i++)
-            {
-                final int index = i;
-                TableColumn<Entrada, String> column = new TableColumn<>(cabecalhoLista.get(i));
-                if (i == cabecalhoLista.size() - 1)  // classe
-                {
-                    column.setCellValueFactory(new PropertyValueFactory<>("classe"));
-                }
-                else
-                {
-                    column.setCellValueFactory(param ->new ReadOnlyStringWrapper(String.format("%.4f", param.getValue().getEntradas().get(index))));
-                    atributos++;
-                }
-                column.prefWidthProperty().bind(tableView.widthProperty().divide(cabecalhoLista.size()));
-                tableView.getColumns().add(column);
-            }
-            linha = bufferedReader.readLine();
+            String[] cabecalho = linha.split(",");
 
-            while (linha != null)
-            {
+            // Só cria as colunas se for TREINO
+            if (isTreino) {
+                tableView.getItems().clear();
+                tableView.getColumns().clear();
+                atributos = 0;
+                saidasList.clear();
+
+                for (int i = 0; i < cabecalho.length; i++) {
+                    final int index = i;
+                    TableColumn<Entrada, String> column = new TableColumn<>(cabecalho[i]);
+
+                    if (i == cabecalho.length - 1) {
+                        column.setCellValueFactory(new PropertyValueFactory<>("classe"));
+                    } else {
+                        column.setCellValueFactory(param ->
+                                new ReadOnlyStringWrapper(String.format("%.4f",
+                                        param.getValue().getEntradas().get(index))));
+                        atributos++;
+                    }
+
+                    column.prefWidthProperty().bind(tableView.widthProperty().divide(cabecalho.length));
+                    tableView.getColumns().add(column);
+                }
+            }
+
+            // Lê dados
+            linha = bufferedReader.readLine();
+            while (linha != null) {
                 String[] partes = linha.split(",");
                 List<Double> entradas = new ArrayList<>();
-                String classe;
 
-                for (int i=0; i<partes.length - 1; i++)
-                {
+                for (int i = 0; i < partes.length - 1; i++) {
                     entradas.add(Double.parseDouble(partes[i]));
                 }
-                classe = partes[partes.length - 1];
-                if (!saidasList.contains(classe))
-                    saidasList.add(classe);
-                entradaList.add(new Entrada(entradas, classe));
+
+                String classe = partes[partes.length - 1];
+
+                if (isTreino) {
+                    if (!saidasList.contains(classe))
+                        saidasList.add(classe);
+
+                    entradaList.add(new Entrada(entradas, classe));
+                }
+                else {
+                    entradaList.add(new Entrada(entradas, classe));
+                }
+
                 linha = bufferedReader.readLine();
             }
-            saidas = saidasList.size();
+
             bufferedReader.close();
 
-        }catch (Exception e){
-
+        } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setContentText("Erro ao ler arquivo: " + e.getMessage());
             alert.showAndWait();
         }
     }
 
-    public void onAbrir(ActionEvent actionEvent)
+
+    private void calcularMinMaxTreino() {
+        minTreino = new double[atributos];
+        maxTreino = new double[atributos];
+
+        for (int c = 0; c < atributos; c++) {
+            minTreino[c] = Double.MAX_VALUE;
+            maxTreino[c] = -Double.MAX_VALUE;
+        }
+
+        for (Entrada e : entradaList) {
+            for (int c = 0; c < atributos; c++) {
+                double v = e.getEntradas().get(c);
+
+                if (v < minTreino[c]) minTreino[c] = v;
+                if (v > maxTreino[c]) maxTreino[c] = v;
+            }
+        }
+    }
+
+    private void normalizarEntradas(boolean treino) {
+        for (Entrada e : entradaList) {
+            for (int c = 0; c < atributos; c++) {
+                double v = e.getEntradas().get(c);
+                double n = (v - minTreino[c]) / (maxTreino[c] - minTreino[c]);
+                e.getEntradas().set(c, n);
+            }
+        }
+        if(treino)
+            tableView.setItems(FXCollections.observableArrayList(entradaList));
+    }
+
+
+    public void onAbrirTreino(ActionEvent actionEvent)
     {
         FileChooser fileChooser = new FileChooser();
-        //fileChooser.setInitialDirectory(new File("C://")); //para windows
-        fileChooser.setInitialDirectory(new File("/home/gabriel/Documents/faculdade/facul-6t/IA 1 - Inteligencia Artificial 1/bimestre2/RedeNeural/RedeNeuralMLP/src/main/resources/arquivos/")); //linux
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
+
         File file = fileChooser.showOpenDialog(null);
         if (file != null)
         {
-            tfCaminhoArquivo.setText(file.getAbsolutePath());
-            tableView.getItems().clear();
-            tableView.getColumns().clear();
+            tfCaminhoArquivoTreino.setText(file.getAbsolutePath());
             entradaList.clear();
-            saidasList.clear();
-            atributos = 0;
-            saidas = 0;
-            lerArquivo(file);
-            preencherTabela();
+
+            lerArquivo(file, true);
+            calcularMinMaxTreino();
+            normalizarEntradas(true);
+
+            saidas = saidasList.size();
             calcularQtdeNeuroniosOcultos();
-            tfCamadaEntrada.setText(""+atributos);
-            tfCamadaSaida.setText(""+saidas);
-            tfCamadaOculta.setText(""+qtdeNeuroniosOcultos);
+
+            tfCamadaEntrada.setText("" + atributos);
+            tfCamadaSaida.setText("" + saidas);
+            tfCamadaOculta.setText("" + qtdeNeuroniosOcultos);
         }
     }
+
+
+    public void onAbrirTeste(ActionEvent actionEvent)
+    {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
+
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null)
+        {
+            tfCaminhoArquivoTeste.setText(file.getAbsolutePath());
+            entradaList.clear();
+
+            lerArquivo(file, false);
+            normalizarEntradas(false);
+        }
+    }
+
+
 
     public void onAvancar(ActionEvent actionEvent)
     {
         treinamento();
+    }
+    public void onTestarEntrada(ActionEvent actionEvent)
+    {
+        testarEntradas();
     }
 }
