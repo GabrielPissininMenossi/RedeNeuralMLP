@@ -1,10 +1,15 @@
 package fipp.muscleandiq.redeneuralmlp;
 
 import fipp.muscleandiq.redeneuralmlp.entities.Entrada;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
@@ -13,9 +18,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 public class MainController {
     @FXML
@@ -42,6 +45,12 @@ public class MainController {
     private TextField tfCaminhoArquivoTeste;
     @FXML
     public TableView<Entrada> tableView;
+    @FXML
+    public TableView<int[]> tvConfusao; //fazer
+    @FXML
+    private LineChart<Number, Number> lcGrafico;
+
+    private XYChart.Series<Number, Number> serieErro = new XYChart.Series<>();
 
     //variáveis
     private List<Entrada> entradaList = new ArrayList<>();//lista de treinamento
@@ -49,7 +58,6 @@ public class MainController {
     // Min/max do treinamento da normalização, pois no teste deve ser utilizado esses valores
     private double[] minTreino;
     private double[] maxTreino;
-
 
     private List<String> saidasList = new ArrayList<>();
     private int atributos = 0; // qtde de entradas
@@ -74,6 +82,10 @@ public class MainController {
         tfNumIteracao.setText("5000");
         tfN.setText("0.1");
         idLinear.setSelected(true);
+
+        //inicializar gráfico
+        serieErro.setName("Erro por época");
+        lcGrafico.getData().add(serieErro);
     }
 
     //inicializar metrizes de arestas e vetores
@@ -268,6 +280,7 @@ public class MainController {
             System.out.print("\n");
         }
     }
+
     private void exibirMatrizConfusao(){
         for (int l = 0; l < saidas; l++)
         {
@@ -280,43 +293,136 @@ public class MainController {
     }
 
     //treinamento da rede neural
+//    private void treinamento()
+//    {
+//        gerarMatrizes(); //passo 0
+//        int i = 0;
+//        double erroEpoca = 1.0; //deixa um erro grande para
+//        double erroEsperado = Double.parseDouble(tfErro.getText().toString()); //pega o erro setado no front
+//        int epocas = Integer.parseInt(tfNumIteracao.getText().toString());
+//        n = Double.parseDouble(tfN.getText().toString());
+//
+//        // fica treinando enquanto o erro for maior, ou a quantidade de épocas ainda n foi atingida
+//        while (i < epocas && erroEpoca > erroEsperado)
+//        {
+//            int j = 0;
+//            double erroTotalEpoca = 0;
+//            while (j < entradaList.size())
+//            {
+//                // passo 1 -> pega as entradas
+//                Entrada entrada = entradaList.get(j);
+//
+//                //passos 2 até 9
+//                treinarLinha(entrada);
+//
+//                //passo 10 -> calcula o erra da rede
+//                erroTotalEpoca = erroTotalEpoca + calculaErro(entrada);
+//                j++;
+//            }
+//            erroEpoca = erroTotalEpoca / entradaList.size(); //atualizar o erro gerado na época
+//            System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
+//            i++;
+//        }
+//
+//        // exibições
+//        //System.out.println(entradaList.size());
+//        System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
+//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//        alert.setContentText("Treinamento Finalizado");
+//        alert.showAndWait();
+//    }
+
     private void treinamento()
     {
-        gerarMatrizes(); //passo 0
-        int i = 0;
-        double erroEpoca = 1.0; //deixa um erro grande para
-        double erroEsperado = Double.parseDouble(tfErro.getText().toString()); //pega o erro setado no front
-        int epocas = Integer.parseInt(tfNumIteracao.getText().toString());
-        n = Double.parseDouble(tfN.getText().toString());
+        new Thread(() -> {
+            //limpa o gráfico para não exibir dados do treinamento anterior
+            Platform.runLater(() -> {
+                serieErro.getData().clear();
+            });
+            gerarMatrizes();
+            int i = 0;
+            double erroEpoca = 1.0;
+            double erroEsperado = Double.parseDouble(tfErro.getText());
+            int epocas = Integer.parseInt(tfNumIteracao.getText());
+            n = Double.parseDouble(tfN.getText());
 
-        // fica treinando enquanto o erro for maior, ou a quantidade de épocas ainda n foi atingida
-        while (i < epocas && erroEpoca > erroEsperado)
-        {
-            int j = 0;
-            double erroTotalEpoca = 0;
-            while (j < entradaList.size())
-            {
-                // passo 1 -> pega as entradas
-                Entrada entrada = entradaList.get(j);
+            while (i < epocas && erroEpoca > erroEsperado) {
 
-                //passos 2 até 9
-                treinarLinha(entrada);
+                double erroTotalEpoca = 0;
+                int j=0;
+                while(j<entradaList.size())
+                {
+                    // passo 1 -> pega as entradas
+                    Entrada entrada = entradaList.get(j);
 
-                //passo 10 -> calcula o erra da rede
-                erroTotalEpoca = erroTotalEpoca + calculaErro(entrada);
-                j++;
+                    //passos 2 até 9
+                    treinarLinha(entrada);
+
+                    //passo 10 -> calcula o erra da rede
+                    erroTotalEpoca += calculaErro(entrada);
+
+                    System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
+                    j++;
+                }
+
+                erroEpoca = erroTotalEpoca / entradaList.size();
+
+                int finalI = i;
+                double finalErroEpoca = erroEpoca;
+
+                // Atualiza o gráfico na UI Thread
+                Platform.runLater(() -> {
+                    serieErro.getData().add(new XYChart.Data<>(finalI, finalErroEpoca));
+                });
+
+                i++;
             }
-            erroEpoca = erroTotalEpoca / entradaList.size(); //atualizar o erro gerado na época
-            System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
-            i++;
+
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setContentText("Treinamento Finalizado");
+                alert.showAndWait();
+            });
+
+        }).start();
+    }
+
+    private void atualizarTabelaConfusao() {
+
+        if (matrizConfusao == null || matrizConfusao.length == 0)
+            return;
+
+        // Se a tabela não tem colunas ou se o tamanho mudou → recria colunas
+        if (tvConfusao.getColumns().isEmpty() ||
+                tvConfusao.getColumns().size() != matrizConfusao[0].length) {
+
+            tvConfusao.getColumns().clear();
+
+            int colunas = matrizConfusao[0].length;
+
+            for (int c = 0; c < colunas; c++) {
+                final int index = c;
+
+                TableColumn<int[], Integer> coluna =
+                        new TableColumn<>("C" + c);
+
+                coluna.setCellValueFactory(
+                        data -> new SimpleIntegerProperty(
+                                data.getValue()[index]
+                        ).asObject()
+                );
+
+                tvConfusao.getColumns().add(coluna);
+            }
         }
 
-        // exibições
-        //System.out.println(entradaList.size());
-        System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setContentText("Treinamento Finalizado");
-        alert.showAndWait();
+        // Carrega linhas
+        ObservableList<int[]> linhas = FXCollections.observableArrayList();
+        for (int[] linha : matrizConfusao) {
+            linhas.add(linha);
+        }
+
+        tvConfusao.setItems(linhas);
     }
 
     private void testarEntradas()
@@ -336,6 +442,7 @@ public class MainController {
             i++;
         }
         exibirMatrizConfusao();
+        Platform.runLater(() -> atualizarTabelaConfusao());
 
     }
 
@@ -389,7 +496,6 @@ public class MainController {
 
         return indiceMaior;
     }
-
 
     private void calcularQtdeNeuroniosOcultos()
     {
@@ -452,7 +558,6 @@ public class MainController {
         }
         return menor;
     }
-
 
     private void lerArquivo(File file, boolean isTreino)
     {
@@ -520,7 +625,6 @@ public class MainController {
         }
     }
 
-
     private void calcularMinMaxTreino() {
         minTreino = new double[atributos];
         maxTreino = new double[atributos];
@@ -540,7 +644,8 @@ public class MainController {
         }
     }
 
-    private void normalizarEntradas(boolean treino) {
+    private void normalizarEntradas(boolean treino)
+    {
         for (Entrada e : entradaList) {
             for (int c = 0; c < atributos; c++) {
                 double v = e.getEntradas().get(c);
@@ -551,7 +656,6 @@ public class MainController {
         if(treino)
             tableView.setItems(FXCollections.observableArrayList(entradaList));
     }
-
 
     public void onAbrirTreino(ActionEvent actionEvent)
     {
@@ -577,7 +681,6 @@ public class MainController {
         }
     }
 
-
     public void onAbrirTeste(ActionEvent actionEvent)
     {
         FileChooser fileChooser = new FileChooser();
@@ -594,12 +697,11 @@ public class MainController {
         }
     }
 
-
-
     public void onAvancar(ActionEvent actionEvent)
     {
         treinamento();
     }
+
     public void onTestarEntrada(ActionEvent actionEvent)
     {
         testarEntradas();
