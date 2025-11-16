@@ -53,7 +53,8 @@ public class MainController {
     private XYChart.Series<Number, Number> serieErro = new XYChart.Series<>();
 
     //variáveis
-    private List<Entrada> entradaList = new ArrayList<>();//lista de treinamento
+    private List<Entrada> entradaTreinoList = new ArrayList<>(); //lista de treinamento
+    private List<Entrada> entradaTesteList = new ArrayList<>(); //lista para os testes
 
     // Min/max do treinamento da normalização, pois no teste deve ser utilizado esses valores
     private double[] minTreino;
@@ -350,10 +351,10 @@ public class MainController {
 
                 double erroTotalEpoca = 0;
                 int j=0;
-                while(j<entradaList.size())
+                while(j<entradaTreinoList.size())
                 {
                     // passo 1 -> pega as entradas
-                    Entrada entrada = entradaList.get(j);
+                    Entrada entrada = entradaTreinoList.get(j);
 
                     //passos 2 até 9
                     treinarLinha(entrada);
@@ -365,7 +366,7 @@ public class MainController {
                     j++;
                 }
 
-                erroEpoca = erroTotalEpoca / entradaList.size();
+                erroEpoca = erroTotalEpoca / entradaTreinoList.size();
 
                 int finalI = i;
                 double finalErroEpoca = erroEpoca;
@@ -430,10 +431,10 @@ public class MainController {
         gerarMatrizConfusao(); //para visualizar os erros e acertos do treinamento da rede neural
         int i=0;
         int posClasse, classeResultado;
-        while(i < entradaList.size())
+        while(i < entradaTesteList.size())
         {
             //pegar a linha atual
-            Entrada entrada = entradaList.get(i);
+            Entrada entrada = entradaTesteList.get(i);
             //encontrar a posição na linha da matriz de confusão
             posClasse = buscarIndice(entrada.getClasse());
             classeResultado = testarLinha(entrada); //essa função que contém toda a complexidade de um teste da rede neural
@@ -502,63 +503,6 @@ public class MainController {
         qtdeNeuroniosOcultos = (int) Math.ceil((atributos + saidas)/2.0);
     }
 
-    private void preencherTabela()
-    {
-        int i = 0, j;
-        double valor, menorValor, maiorValor;
-
-        while(i < entradaList.size())
-        {
-            Entrada entrada = entradaList.get(i);
-            j = 0;
-            while (j < entrada.getEntradas().size())
-            {
-                menorValor = buscarMenorColuna(j);
-                maiorValor = buscarMaiorColuna(j);
-                valor = entrada.getEntradas().get(j);
-                valor = normalizarValor(valor, menorValor, maiorValor);
-                entrada.getEntradas().set(j, valor);
-                j++;
-            }
-            i++;
-        }
-        tableView.setItems(FXCollections.observableList(entradaList));
-    }
-
-    private double normalizarValor(double valorAtributo, double menorValorAtributo, double maiorValorAtributo)
-    {
-        return (valorAtributo - menorValorAtributo)/(maiorValorAtributo - menorValorAtributo);
-    }
-
-    private double buscarMaiorColuna(int coluna)
-    {
-        double maior = 0;
-        int i = 0;
-        while (i < entradaList.size())
-        {
-            Entrada aux = entradaList.get(i);
-            if (aux.getEntradas().get(coluna) > maior)
-                maior = aux.getEntradas().get(coluna);
-
-            i++;
-        }
-        return maior;
-    }
-
-    private double buscarMenorColuna(int coluna)
-    {
-        int i = 0;
-        double menor = 999999;
-        while (i < entradaList.size())
-        {
-            Entrada aux = entradaList.get(i);
-            if (aux.getEntradas().get(coluna) < menor)
-                menor = aux.getEntradas().get(coluna);
-            i++;
-        }
-        return menor;
-    }
-
     private void lerArquivo(File file, boolean isTreino)
     {
         try {
@@ -607,10 +551,10 @@ public class MainController {
                     if (!saidasList.contains(classe))
                         saidasList.add(classe);
 
-                    entradaList.add(new Entrada(entradas, classe));
+                    entradaTreinoList.add(new Entrada(entradas, classe));
                 }
                 else {
-                    entradaList.add(new Entrada(entradas, classe));
+                    entradaTesteList.add(new Entrada(entradas, classe));
                 }
 
                 linha = bufferedReader.readLine();
@@ -634,7 +578,7 @@ public class MainController {
             maxTreino[c] = -Double.MAX_VALUE;
         }
 
-        for (Entrada e : entradaList) {
+        for (Entrada e : entradaTreinoList) {
             for (int c = 0; c < atributos; c++) {
                 double v = e.getEntradas().get(c);
 
@@ -646,7 +590,7 @@ public class MainController {
 
     private void normalizarEntradas(boolean treino)
     {
-        for (Entrada e : entradaList) {
+        for (Entrada e : entradaTreinoList) {
             for (int c = 0; c < atributos; c++) {
                 double v = e.getEntradas().get(c);
                 double n = (v - minTreino[c]) / (maxTreino[c] - minTreino[c]);
@@ -654,7 +598,7 @@ public class MainController {
             }
         }
         if(treino)
-            tableView.setItems(FXCollections.observableArrayList(entradaList));
+            tableView.setItems(FXCollections.observableArrayList(entradaTreinoList));
     }
 
     public void onAbrirTreino(ActionEvent actionEvent)
@@ -666,7 +610,7 @@ public class MainController {
         if (file != null)
         {
             tfCaminhoArquivoTreino.setText(file.getAbsolutePath());
-            entradaList.clear();
+            entradaTreinoList.clear();
 
             lerArquivo(file, true);
             calcularMinMaxTreino();
@@ -690,7 +634,7 @@ public class MainController {
         if (file != null)
         {
             tfCaminhoArquivoTeste.setText(file.getAbsolutePath());
-            entradaList.clear();
+            entradaTesteList.clear();
 
             lerArquivo(file, false);
             normalizarEntradas(false);
