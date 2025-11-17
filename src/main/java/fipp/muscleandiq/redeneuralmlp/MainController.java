@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 public class MainController {
     @FXML
@@ -52,6 +54,11 @@ public class MainController {
 
     private XYChart.Series<Number, Number> serieErro = new XYChart.Series<>();
 
+    // flag
+    private int flagTreinoCarregado = 0;
+    private int flagTesteCarregado = 0;
+    private int flagTreinoTreinado = 0;
+    private int flag = 0;
     //variáveis
     private List<Entrada> entradaTreinoList = new ArrayList<>(); //lista de treinamento
     private List<Entrada> entradaTesteList = new ArrayList<>(); //lista para os testes
@@ -59,7 +66,7 @@ public class MainController {
     // Min/max do treinamento da normalização, pois no teste deve ser utilizado esses valores
     private double[] minTreino;
     private double[] maxTreino;
-
+    private List<Double> ultimas10Epocas = new ArrayList<>();
     private List<String> saidasList = new ArrayList<>();
     private int atributos = 0; // qtde de entradas
     private int saidas = 0; // qtde de neuronios de saida
@@ -80,7 +87,7 @@ public class MainController {
     {
         //inicializar com valores default
         tfErro.setText("0.00001");
-        tfNumIteracao.setText("5000");
+        tfNumIteracao.setText("50");
         tfN.setText("0.1");
         idLinear.setSelected(true);
 
@@ -88,7 +95,15 @@ public class MainController {
         serieErro.setName("Erro por época");
         lcGrafico.getData().add(serieErro);
     }
-
+    private void exibirTeste()
+    {
+        int i = 0;
+        while (i < entradaTesteList.size())
+        {
+            System.out.println();
+            i++;
+        }
+    }
     //inicializar metrizes de arestas e vetores
     private void gerarMatrizes()
     {
@@ -332,7 +347,41 @@ public class MainController {
 //        alert.setContentText("Treinamento Finalizado");
 //        alert.showAndWait();
 //    }
+    private void adicionarEpoca(double erro)
+    {
+        if (ultimas10Epocas.size() == 100)
+        {
+            ultimas10Epocas.remove(0);
+        }
+        ultimas10Epocas.add(erro);
+    }
+    private double desvioPadrao()
+    {
+        double soma = 0;
+        double media;
+        for (int i = 0; i < ultimas10Epocas.size();i++)
+        {
+            soma = soma + ultimas10Epocas.get(i);
+        }
+        media = soma/ultimas10Epocas.size();
+        soma = 0;
+        for (int i = 0; i < ultimas10Epocas.size(); i++)
+        {
+            soma = soma + Math.pow(ultimas10Epocas.get(i) - media, 2);
+        }
+        soma = soma/(ultimas10Epocas.size() - 1);
+        return Math.sqrt(soma);
+    }
+    private boolean isPlato()
+    {
+        if (ultimas10Epocas.size() < 10)
+            return false;
+        else
+        if (desvioPadrao() >= 0 && desvioPadrao() <= 0.00001)
+            return true;
 
+        return false;
+    }
     private void treinamento()
     {
         new Thread(() -> {
@@ -346,8 +395,9 @@ public class MainController {
             double erroEsperado = Double.parseDouble(tfErro.getText());
             int epocas = Integer.parseInt(tfNumIteracao.getText());
             n = Double.parseDouble(tfN.getText());
+            flag = 0;
+            while (i < epocas && erroEpoca > erroEsperado && flag != 1) {
 
-            while (i < epocas && erroEpoca > erroEsperado) {
 
                 double erroTotalEpoca = 0;
                 int j=0;
@@ -362,10 +412,10 @@ public class MainController {
                     //passo 10 -> calcula o erra da rede
                     erroTotalEpoca += calculaErro(entrada);
 
-                    System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
+
                     j++;
                 }
-
+                System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
                 erroEpoca = erroTotalEpoca / entradaTreinoList.size();
 
                 int finalI = i;
@@ -375,13 +425,59 @@ public class MainController {
                 Platform.runLater(() -> {
                     serieErro.getData().add(new XYChart.Data<>(finalI, finalErroEpoca));
                 });
+                adicionarEpoca(finalErroEpoca);
+                if (isPlato()) {
 
+                    CountDownLatch latch = new CountDownLatch(1);
+
+                    Platform.runLater(() -> {
+                        Alert alert1 = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert1.setTitle("Sistema");
+                        alert1.setHeaderText("Plato Encontrado");
+                        alert1.setContentText("Deseja Continuar o Treinamento?");
+
+                        alert1.showAndWait().ifPresent(button -> {
+                            if (button == ButtonType.OK) {
+
+                                Alert alert2 = new Alert(Alert.AlertType.CONFIRMATION);
+                                alert2.setTitle("Sistema");
+                                alert2.setHeaderText("Taxa de Aprendizado");
+                                alert2.setContentText("Deseja reduzir 10%?");
+
+                                alert2.showAndWait().ifPresent(btn -> {
+                                    if (btn == ButtonType.OK) {
+                                        n = n * 0.90;
+                                        Platform.runLater(() -> tfN.setText(String.format("%.4f", n)));
+                                    }
+
+                                });
+
+                            } else {
+                                flag = 1;
+                            }
+
+                            latch.countDown(); // libera o treinamento
+                        });
+                    });
+
+                    // aqui o treinamento aguarda o usuário
+                    try {
+                        latch.await();
+                    }catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        Thread.currentThread().interrupt();
+                    }
+
+                }
                 i++;
             }
-
+            System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setContentText("Treinamento Finalizado");
+                alert.setTitle("Sucesso");
+                alert.setHeaderText("Finalizado");
+                alert.setContentText("Treinamento Realizado");
                 alert.showAndWait();
             });
 
@@ -588,7 +684,7 @@ public class MainController {
         }
     }
 
-    private void normalizarEntradas(boolean treino)
+    private void normalizarEntradasTreino()
     {
         for (Entrada e : entradaTreinoList) {
             for (int c = 0; c < atributos; c++) {
@@ -597,8 +693,17 @@ public class MainController {
                 e.getEntradas().set(c, n);
             }
         }
-        if(treino)
-            tableView.setItems(FXCollections.observableArrayList(entradaTreinoList));
+        tableView.setItems(FXCollections.observableArrayList(entradaTreinoList));
+    }
+    private void normalizarEntradasTeste()
+    {
+        for (Entrada e : entradaTesteList) {
+            for (int c = 0; c < atributos; c++) {
+                double v = e.getEntradas().get(c);
+                double n = (v - minTreino[c]) / (maxTreino[c] - minTreino[c]);
+                e.getEntradas().set(c, n);
+            }
+        }
     }
 
     public void onAbrirTreino(ActionEvent actionEvent)
@@ -609,12 +714,13 @@ public class MainController {
         File file = fileChooser.showOpenDialog(null);
         if (file != null)
         {
+            flagTreinoCarregado = 1;
             tfCaminhoArquivoTreino.setText(file.getAbsolutePath());
             entradaTreinoList.clear();
 
             lerArquivo(file, true);
             calcularMinMaxTreino();
-            normalizarEntradas(true);
+            normalizarEntradasTreino();
 
             saidas = saidasList.size();
             calcularQtdeNeuroniosOcultos();
@@ -627,27 +733,77 @@ public class MainController {
 
     public void onAbrirTeste(ActionEvent actionEvent)
     {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
-
-        File file = fileChooser.showOpenDialog(null);
-        if (file != null)
+        if (flagTreinoCarregado == 1)
         {
-            tfCaminhoArquivoTeste.setText(file.getAbsolutePath());
-            entradaTesteList.clear();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
 
-            lerArquivo(file, false);
-            normalizarEntradas(false);
+            File file = fileChooser.showOpenDialog(null);
+            if (file != null)
+            {
+                flagTesteCarregado = 1;
+                tfCaminhoArquivoTeste.setText(file.getAbsolutePath());
+                entradaTesteList.clear();
+
+                lerArquivo(file, false);
+                normalizarEntradasTeste();
+            }
+        }
+       else
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Arquivo Ainda Não Carregado");
+            alert.setTitle("Erro");
+            alert.setContentText("Carregue o Arquivo de Treino Antes");
+            alert.showAndWait();
         }
     }
+    private void desabilitarBotaoTreinar()
+    {
 
+    }
     public void onAvancar(ActionEvent actionEvent)
     {
-        treinamento();
+        int flag = 0;
+        if (flagTreinoCarregado == 1)
+        {
+            treinamento();
+            flagTreinoTreinado = 1;
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Arquivo Ainda Não Carregado");
+            alert.setTitle("Erro");
+            alert.setContentText("Carregue o Arquivo de Treinamento Antes");
+            alert.showAndWait();
+        }
     }
 
     public void onTestarEntrada(ActionEvent actionEvent)
     {
-        testarEntradas();
+        if (flagTesteCarregado == 1 && flagTreinoTreinado == 1)
+        {
+            testarEntradas();
+        }
+        else
+        {
+            if (flagTreinoTreinado == 0)
+            {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setHeaderText("Treino Ainda Não Realizado");
+                alert.setTitle("Erro");
+                alert.setContentText("Realize o Treinamento Antes");
+                alert.showAndWait();
+            }
+            else
+            {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setHeaderText("Arquivo Ainda Não Carregado");
+                alert.setTitle("Erro");
+                alert.setContentText("Carregue o Arquivo de Teste Antes");
+                alert.showAndWait();
+            }
+        }
     }
 }

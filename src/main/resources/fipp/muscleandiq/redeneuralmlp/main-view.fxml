@@ -16,16 +16,14 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.ToggleGroup?>
-<VBox alignment="CENTER" minHeight="782.0" minWidth="778.0" spacing="20.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fipp.muscleandiq.redeneuralmlp.MainController">
+<VBox alignment="CENTER" minHeight="782.0" minWidth="778.0" spacing="20.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fipp.muscleandiq.redeneuralmlp.MainController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
 
     <VBox alignment="CENTER" spacing="5" style="-fx-background-color: white;">
-        <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="FACULDADE DE INFORMÁTICA DE PRESIDENTE PRUDENTE" />
-        <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="INTELIGÊNCIA ARTIFICIAL" />
-        <Label style="-fx-font-size: 20px; -fx-text-fill: green; -fx-font-weight: bold;" text="REDES NEURAIS" />
+        <Label style="-fx-font-size: 20px; -fx-text-fill: green; -fx-font-weight: bold;" text="REDES NEURAIS - MLP" />
     </VBox>
 
 
@@ -75,7 +73,7 @@
                     <padding>
                         <Insets bottom="10" left="10" right="10" top="10" />
                     </padding>
-                    <Button minWidth="-Infinity" onAction="#onAbrirTeste" prefHeight="26.0" prefWidth="120.0" text="Carregar Teste" />
+                    <Button fx:id="btCarregarTeste" minWidth="-Infinity" onAction="#onAbrirTeste" prefHeight="26.0" prefWidth="120.0" text="Carregar Teste" />
                     <TextField fx:id="tfCaminhoArquivoTeste" disable="true" minHeight="-Infinity" minWidth="-Infinity" prefHeight="26.0" prefWidth="200.0" />
                 </HBox>
 
@@ -85,7 +83,7 @@
                     <padding>
                         <Insets bottom="10" left="10" right="10" top="10" />
                     </padding>
-                    <Button minHeight="-Infinity" minWidth="-Infinity" onAction="#onAbrirTreino" prefHeight="26.0" prefWidth="120.0" text="Carregar Treino" />
+                    <Button fx:id="btCarregarTreino" minHeight="-Infinity" minWidth="-Infinity" onAction="#onAbrirTreino" prefHeight="26.0" prefWidth="120.0" text="Carregar Treino" />
                     <TextField fx:id="tfCaminhoArquivoTreino" disable="true" prefHeight="26.0" prefWidth="200.0" />
                 </HBox>
             </children>
@@ -120,8 +118,8 @@
                     <padding>
                         <Insets bottom="10" left="10" right="10" top="10" />
                     </padding>
-                    <Button onAction="#onAvancar" prefWidth="100" text="Treinar" />
-                    <Button onAction="#onTestarEntrada" prefWidth="100" text="Testar" />
+                    <Button fx:id="btTreinar" onAction="#onAvancar" prefWidth="100" text="Treinar" />
+                    <Button fx:id="btTestar" onAction="#onTestarEntrada" prefWidth="100" text="Testar" />
                 </HBox>
             </children>
          </VBox>
