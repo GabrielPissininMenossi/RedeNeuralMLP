@@ -29,6 +29,11 @@ public class MainController {
     public RadioButton idLogistica;
     @FXML
     public RadioButton idHiperbolica;
+
+    @FXML
+    private TextField tfCaminhoArquivoTreinoTeste;
+    @FXML
+    private Button btCarregarTreinoTeste;
     @FXML
     private TextField tfCamadaEntrada;
     @FXML
@@ -52,13 +57,26 @@ public class MainController {
     @FXML
     private LineChart<Number, Number> lcGrafico;
 
+    @FXML
+    private Button btCarregarTeste;
+    @FXML
+    private Button btCarregarTreino;
+    @FXML
+    private Button btTreinar;
+    @FXML
+    private Button btTestar;
+
+
     private XYChart.Series<Number, Number> serieErro = new XYChart.Series<>();
 
     // flag
+    private int flagTreinoTesteCarregado = 0;
     private int flagTreinoCarregado = 0;
     private int flagTesteCarregado = 0;
     private int flagTreinoTreinado = 0;
     private int flag = 0;
+    private String funcaoTreinada;
+
     //variáveis
     private List<Entrada> entradaTreinoList = new ArrayList<>(); //lista de treinamento
     private List<Entrada> entradaTesteList = new ArrayList<>(); //lista para os testes
@@ -80,6 +98,7 @@ public class MainController {
     private double[] vetISaida;
     private double[] vetErroSaida;
     private double n;
+    private double valorTreinamento;
     private int[][] matrizConfusao;
 
     @FXML
@@ -87,13 +106,16 @@ public class MainController {
     {
         //inicializar com valores default
         tfErro.setText("0.00001");
-        tfNumIteracao.setText("50");
+        tfNumIteracao.setText("1000");
         tfN.setText("0.1");
         idLinear.setSelected(true);
 
         //inicializar gráfico
         serieErro.setName("Erro por época");
         lcGrafico.getData().add(serieErro);
+        
+        //teste do botão
+        //btCarregarTeste.setDisable(true);
     }
     private void exibirTeste()
     {
@@ -307,46 +329,6 @@ public class MainController {
             System.out.print("\n");
         }
     }
-
-    //treinamento da rede neural
-//    private void treinamento()
-//    {
-//        gerarMatrizes(); //passo 0
-//        int i = 0;
-//        double erroEpoca = 1.0; //deixa um erro grande para
-//        double erroEsperado = Double.parseDouble(tfErro.getText().toString()); //pega o erro setado no front
-//        int epocas = Integer.parseInt(tfNumIteracao.getText().toString());
-//        n = Double.parseDouble(tfN.getText().toString());
-//
-//        // fica treinando enquanto o erro for maior, ou a quantidade de épocas ainda n foi atingida
-//        while (i < epocas && erroEpoca > erroEsperado)
-//        {
-//            int j = 0;
-//            double erroTotalEpoca = 0;
-//            while (j < entradaList.size())
-//            {
-//                // passo 1 -> pega as entradas
-//                Entrada entrada = entradaList.get(j);
-//
-//                //passos 2 até 9
-//                treinarLinha(entrada);
-//
-//                //passo 10 -> calcula o erra da rede
-//                erroTotalEpoca = erroTotalEpoca + calculaErro(entrada);
-//                j++;
-//            }
-//            erroEpoca = erroTotalEpoca / entradaList.size(); //atualizar o erro gerado na época
-//            System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
-//            i++;
-//        }
-//
-//        // exibições
-//        //System.out.println(entradaList.size());
-//        System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
-//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//        alert.setContentText("Treinamento Finalizado");
-//        alert.showAndWait();
-//    }
     private void adicionarEpoca(double erro)
     {
         if (ultimas10Epocas.size() == 100)
@@ -374,7 +356,7 @@ public class MainController {
     }
     private boolean isPlato()
     {
-        if (ultimas10Epocas.size() < 10)
+        if (ultimas10Epocas.size() < 100)
             return false;
         else
         if (desvioPadrao() >= 0 && desvioPadrao() <= 0.00001)
@@ -396,8 +378,9 @@ public class MainController {
             int epocas = Integer.parseInt(tfNumIteracao.getText());
             n = Double.parseDouble(tfN.getText());
             flag = 0;
-            while (i < epocas && erroEpoca > erroEsperado && flag != 1) {
-
+            ultimas10Epocas.clear();
+            while (i < epocas && erroEpoca > erroEsperado && flag != 1)
+            {
 
                 double erroTotalEpoca = 0;
                 int j=0;
@@ -415,8 +398,9 @@ public class MainController {
 
                     j++;
                 }
-                System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
                 erroEpoca = erroTotalEpoca / entradaTreinoList.size();
+                System.out.printf("Epoca: %d Erro: %f\n",i + 1, erroEpoca);
+
 
                 int finalI = i;
                 double finalErroEpoca = erroEpoca;
@@ -434,25 +418,27 @@ public class MainController {
                         Alert alert1 = new Alert(Alert.AlertType.CONFIRMATION);
                         alert1.setTitle("Sistema");
                         alert1.setHeaderText("Plato Encontrado");
-                        alert1.setContentText("Deseja Continuar o Treinamento?");
-
+                        alert1.setContentText("Deseja Interromper o Treinamento?");
+                        ButtonType botaoContinuar = new ButtonType("Continuar");
+                        ButtonType botaoReduzir = new ButtonType("Reduzir em 10%");
+                        ButtonType botaoInterromper = new ButtonType("Interromper", ButtonBar.ButtonData.CANCEL_CLOSE);
+                        alert1.getButtonTypes().setAll(botaoContinuar, botaoReduzir, botaoInterromper);
                         alert1.showAndWait().ifPresent(button -> {
-                            if (button == ButtonType.OK) {
+                            if (button == botaoContinuar)
+                            {
+                                ultimas10Epocas.clear();
+                            }
+                            else
+                            if(button == botaoReduzir)
+                            {
+                                n = n * 0.90;
+                                ultimas10Epocas.clear();
+                                Platform.runLater(() -> tfN.setText(String.format("%.4f", n)));
 
-                                Alert alert2 = new Alert(Alert.AlertType.CONFIRMATION);
-                                alert2.setTitle("Sistema");
-                                alert2.setHeaderText("Taxa de Aprendizado");
-                                alert2.setContentText("Deseja reduzir 10%?");
-
-                                alert2.showAndWait().ifPresent(btn -> {
-                                    if (btn == ButtonType.OK) {
-                                        n = n * 0.90;
-                                        Platform.runLater(() -> tfN.setText(String.format("%.4f", n)));
-                                    }
-
-                                });
-
-                            } else {
+                            }
+                            else
+                            if (button == botaoInterromper)
+                            {
                                 flag = 1;
                             }
 
@@ -472,7 +458,10 @@ public class MainController {
                 }
                 i++;
             }
-            System.out.printf("Epoca: %d Erro: %f\n",i, erroEpoca);
+            System.out.printf("==== FIM DO TREINAMENTO ====\n");
+            System.out.printf("Última Época: %d\n", i);
+            System.out.printf("Erro Final: %.6f\n", erroEpoca);
+
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Sucesso");
@@ -678,8 +667,10 @@ public class MainController {
             for (int c = 0; c < atributos; c++) {
                 double v = e.getEntradas().get(c);
 
-                if (v < minTreino[c]) minTreino[c] = v;
-                if (v > maxTreino[c]) maxTreino[c] = v;
+                if (v < minTreino[c])
+                    minTreino[c] = v;
+                if (v > maxTreino[c])
+                    maxTreino[c] = v;
             }
         }
     }
@@ -714,13 +705,22 @@ public class MainController {
         File file = fileChooser.showOpenDialog(null);
         if (file != null)
         {
+            if(flagTreinoTesteCarregado == 1)
+                flagTesteCarregado = 0;
+            flagTreinoTesteCarregado = 0;
             flagTreinoCarregado = 1;
-            tfCaminhoArquivoTreino.setText(file.getAbsolutePath());
-            entradaTreinoList.clear();
+            flagTreinoTreinado = 0;
 
-            lerArquivo(file, true);
-            calcularMinMaxTreino();
-            normalizarEntradasTreino();
+            tfCaminhoArquivoTreino.setText(file.getAbsolutePath());
+            tfCaminhoArquivoTreinoTeste.setText("");
+            entradaTreinoList.clear();
+            serieErro.getData().clear();
+            lcGrafico.getData().clear();
+            lcGrafico.getData().add(serieErro);
+            tvConfusao.getColumns().clear();
+            lerArquivo(file, true); //leio o arquivo
+            calcularMinMaxTreino(); //calculo os mínimos e máximos
+            normalizarEntradasTreino(); //normalizo as entradas
 
             saidas = saidasList.size();
             calcularQtdeNeuroniosOcultos();
@@ -743,6 +743,7 @@ public class MainController {
             {
                 flagTesteCarregado = 1;
                 tfCaminhoArquivoTeste.setText(file.getAbsolutePath());
+                tfCaminhoArquivoTreinoTeste.setText("");
                 entradaTesteList.clear();
 
                 lerArquivo(file, false);
@@ -758,16 +759,50 @@ public class MainController {
             alert.showAndWait();
         }
     }
-    private void desabilitarBotaoTreinar()
-    {
 
-    }
-    public void onAvancar(ActionEvent actionEvent)
+    private void desabilitarBotoes()
     {
-        int flag = 0;
-        if (flagTreinoCarregado == 1)
+        Platform.runLater(() -> {
+            btCarregarTeste.setDisable(true);
+            btCarregarTreino.setDisable(true);
+            btTreinar.setDisable(true);
+            btTestar.setDisable(true);
+        });
+    }
+
+    private void habilitarBotoes()
+    {
+        Platform.runLater(() -> {
+            btCarregarTeste.setDisable(false);
+            btCarregarTreino.setDisable(false);
+            btTreinar.setDisable(false);
+            btTestar.setDisable(false);
+        });
+    }
+    public String getFuncaoAtual()
+    {
+        String aux = "";
+        if (idLinear.isSelected())
+            aux = idLinear.getText();
+        else
+        if (idLogistica.isSelected())
+            aux = idLogistica.getText();
+        else
+        if (idHiperbolica.isSelected())
+            aux = idHiperbolica.getText();
+
+        return aux;
+    }
+    public void onTreinar(ActionEvent actionEvent)
+    {
+        if (flagTreinoCarregado == 1 || flagTreinoTesteCarregado == 1)
         {
+            funcaoTreinada = getFuncaoAtual();
+            tfN.setText("0.1");
+            tvConfusao.getColumns().clear();
+            desabilitarBotoes();
             treinamento();
+            habilitarBotoes();
             flagTreinoTreinado = 1;
         }
         else
@@ -782,9 +817,13 @@ public class MainController {
 
     public void onTestarEntrada(ActionEvent actionEvent)
     {
-        if (flagTesteCarregado == 1 && flagTreinoTreinado == 1)
+        if (((flagTesteCarregado == 1 && flagTreinoTreinado == 1) || (flagTreinoTesteCarregado == 1 && flagTreinoTreinado == 1)) && funcaoTreinada.equals(getFuncaoAtual()))
         {
+            System.out.println(funcaoTreinada);
+            System.out.println(getFuncaoAtual());
+            desabilitarBotoes();
             testarEntradas();
+            habilitarBotoes();
         }
         else
         {
@@ -797,6 +836,7 @@ public class MainController {
                 alert.showAndWait();
             }
             else
+            if (flagTreinoTesteCarregado == 0 && flagTesteCarregado == 0)
             {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setHeaderText("Arquivo Ainda Não Carregado");
@@ -804,6 +844,179 @@ public class MainController {
                 alert.setContentText("Carregue o Arquivo de Teste Antes");
                 alert.showAndWait();
             }
+            else
+            {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setHeaderText("Função de Transferência");
+                alert.setTitle("Erro");
+                alert.setContentText("Não Correspondente Com o Treino Realizado");
+                alert.showAndWait();
+            }
         }
     }
+    private boolean isNumero (String string)
+    {
+        try{
+            Double num = Double.parseDouble(string);
+            System.out.println(num);
+            return !num.isNaN();
+        }
+        catch (NumberFormatException e)
+        {
+            return false;
+        }
+    }
+    public void onAbrirTreinoTeste(ActionEvent actionEvent) {
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+
+            TextInputDialog inputDialog = new TextInputDialog();
+            inputDialog.setTitle("Input Treinamento/Teste");
+            inputDialog.setHeaderText("Porcentagem de Treinamento");
+            inputDialog.setContentText("Informe a % do Arquivo para Treino:");
+            Optional<String> resultTreino = inputDialog.showAndWait();
+
+            //tratar os valores recebidos
+            if (resultTreino.isPresent() && isNumero(resultTreino.get()))
+            {
+                valorTreinamento = Double.parseDouble(resultTreino.get());
+                if(valorTreinamento < 1 || valorTreinamento > 99)
+                {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Sistema");
+                    alert.setHeaderText("Valores Padrões Foram Aplicados");
+                    alert.setContentText("70% para TREINAMENTO e 30% para TESTE");
+                    alert.showAndWait();
+                    valorTreinamento = 70;
+                }
+            }
+            else
+            {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Sistema");
+                alert.setHeaderText("Valores Padrões Foram Aplicados");
+                alert.setContentText("70% para TREINAMENTO e 30% para TESTE");
+                alert.showAndWait();
+                valorTreinamento = 70;
+            }
+
+            tfCaminhoArquivoTreinoTeste.setText(file.getAbsolutePath());
+            serieErro.getData().clear();
+            lcGrafico.getData().clear();
+            lcGrafico.getData().add(serieErro);
+            tvConfusao.getColumns().clear();
+            entradaTesteList.clear();
+            entradaTreinoList.clear();
+            lerArquivoTreinoTeste(file);
+            saidas = saidasList.size();
+            calcularQtdeNeuroniosOcultos();
+            calcularMinMaxTreino();
+            normalizarEntradasTreino();
+            normalizarEntradasTeste();
+
+            // Exibe apenas TREINO na tabela
+            tableView.getItems().addAll(entradaTreinoList);
+
+            //setar as flags
+            flagTreinoTesteCarregado = 1;
+            flagTreinoTreinado = 0;
+            flagTreinoCarregado = 0;
+            //limpar o conteúdo que aparece no treino e teste isolados
+            tfCaminhoArquivoTeste.setText("");
+            tfCaminhoArquivoTreino.setText("");
+        }
+    }
+    private void lerArquivoTreinoTeste(File file)
+    {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String linha = br.readLine();
+            String[] cabecalho = linha.split(",");
+
+            // Limpa tudo
+            tableView.getItems().clear();
+            tableView.getColumns().clear();
+            atributos = 0;
+            saidasList.clear();
+            entradaTreinoList.clear();
+            entradaTesteList.clear();
+
+            // 1) Monta as colunas com o cabecalho
+            for (int i = 0; i < cabecalho.length; i++) {
+
+                final int index = i;
+                TableColumn<Entrada, String> column = new TableColumn<>(cabecalho[i]);
+
+                if (i == cabecalho.length - 1) // Última coluna do arquivo representa a classe
+                {
+                    column.setCellValueFactory(new PropertyValueFactory<>("classe"));
+                }
+                else // O restante das colunas são os atributos e/ou entradas
+                {
+                    column.setCellValueFactory(param ->
+                            new ReadOnlyStringWrapper(String.format("%.4f",
+                                    param.getValue().getEntradas().get(index))));
+                    atributos++;
+                }
+
+                column.prefWidthProperty().bind(tableView.widthProperty().divide(cabecalho.length));
+                tableView.getColumns().add(column);
+            }
+
+            // 2) Lê todas as linhas do arquivo
+            List<Entrada> todasEntradas = new ArrayList<>();
+
+            linha = br.readLine(); //entra lido
+            while (linha != null) {
+                String[] partes = linha.split(","); //separo todas as partes da minha linha
+                List<Double> entradas = new ArrayList<>();
+
+                // atributos numéricos
+                for (int i = 0; i < partes.length - 1; i++) //até -1 pois o último é a classe, um atributo numérico
+                {
+                    entradas.add(Double.parseDouble(partes[i]));
+                }
+
+                // classe
+                String classe = partes[partes.length - 1]; //último elemento da minha linha
+
+                // armazena temporariamente
+                todasEntradas.add(new Entrada(entradas, classe));
+                // adiciona classe única
+                if (!saidasList.contains(classe))
+                    saidasList.add(classe);
+
+                linha = br.readLine(); //sai lido
+            }
+            br.close();
+
+            // 3) SEPARAÇÃO TREINO / TESTE
+            int total = todasEntradas.size();
+            int qtdTreino = (int) Math.round((valorTreinamento / 100.0) * total);
+            System.out.println(qtdTreino);
+
+            //preencher a lista de treino
+            for (int i = 0; i < qtdTreino; i++)
+                entradaTreinoList.add(todasEntradas.get(i));
+
+            //preencher a lista de testes
+            for (int i = qtdTreino; i < todasEntradas.size(); i++)
+                entradaTesteList.add(todasEntradas.get(i));
+
+            //System.out.println(todasEntradas.size());
+            //System.out.println(entradaTreinoList.size());
+            //System.out.println(entradaTesteList.size());
+
+            // a partir daqui eu já li todo o arquivo e separei entre treino e teste
+
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Erro ao ler arquivo: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
 }

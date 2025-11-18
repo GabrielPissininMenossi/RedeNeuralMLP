@@ -16,15 +16,10 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.ToggleGroup?>
-<VBox alignment="CENTER" minHeight="782.0" minWidth="778.0" spacing="20.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fipp.muscleandiq.redeneuralmlp.MainController">
+<VBox alignment="CENTER" minHeight="782.0" minWidth="778.0" spacing="20.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fipp.muscleandiq.redeneuralmlp.MainController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
-
-
-    <VBox alignment="CENTER" spacing="5" style="-fx-background-color: white;">
-        <Label style="-fx-font-size: 20px; -fx-text-fill: green; -fx-font-weight: bold;" text="REDES NEURAIS - MLP" />
-    </VBox>
 
 
     <TitledPane expanded="true" text="Configurar número de neurônios">
@@ -69,14 +64,6 @@
          <VBox prefHeight="200.0" prefWidth="100.0">
             <children>
 
-                   <HBox alignment="CENTER_LEFT" spacing="10">
-                    <padding>
-                        <Insets bottom="10" left="10" right="10" top="10" />
-                    </padding>
-                    <Button fx:id="btCarregarTeste" minWidth="-Infinity" onAction="#onAbrirTeste" prefHeight="26.0" prefWidth="120.0" text="Carregar Teste" />
-                    <TextField fx:id="tfCaminhoArquivoTeste" disable="true" minHeight="-Infinity" minWidth="-Infinity" prefHeight="26.0" prefWidth="200.0" />
-                </HBox>
-
 
 
                 <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="769.0" spacing="10">
@@ -86,6 +73,23 @@
                     <Button fx:id="btCarregarTreino" minHeight="-Infinity" minWidth="-Infinity" onAction="#onAbrirTreino" prefHeight="26.0" prefWidth="120.0" text="Carregar Treino" />
                     <TextField fx:id="tfCaminhoArquivoTreino" disable="true" prefHeight="26.0" prefWidth="200.0" />
                 </HBox>
+
+                   <HBox alignment="CENTER_LEFT" spacing="10">
+                    <padding>
+                        <Insets bottom="10" left="10" right="10" top="10" />
+                    </padding>
+                    <Button fx:id="btCarregarTeste" minWidth="-Infinity" onAction="#onAbrirTeste" prefHeight="44.0" prefWidth="119.0" text="Carregar Teste" />
+                    <TextField fx:id="tfCaminhoArquivoTeste" disable="true" minHeight="-Infinity" minWidth="-Infinity" prefHeight="26.0" prefWidth="200.0" />
+                </HBox>
+               <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="56.0" prefHeight="100.0" prefWidth="769.0" spacing="10">
+                  <padding>
+                     <Insets bottom="10" left="10" right="10" top="10" />
+                  </padding>
+                  <children>
+                     <Button fx:id="btCarregarTreinoTeste" minHeight="-Infinity" minWidth="-Infinity" onAction="#onAbrirTreinoTeste" prefHeight="26.0" prefWidth="146.0" text="Carregar Treino/Teste" />
+                     <TextField fx:id="tfCaminhoArquivoTreinoTeste" disable="true" prefHeight="26.0" prefWidth="200.0" />
+                  </children>
+               </HBox>
             </children>
          </VBox>
          <VBox prefHeight="200.0" prefWidth="100.0">
@@ -102,7 +106,7 @@
                             <ToggleGroup fx:id="grupoFuncao" />
                         </fx:define>
             
-                              <RadioButton fx:id="idLinear" selected="true" text="Linear" toggleGroup="${grupoFuncao}" />
+                        <RadioButton fx:id="idLinear" selected="true" text="Linear" toggleGroup="${grupoFuncao}"/>
                         <RadioButton fx:id="idLogistica" text="Logística" toggleGroup="${grupoFuncao}" />
                         <RadioButton fx:id="idHiperbolica" text="Hiperbólica" toggleGroup="${grupoFuncao}" />
                      <opaqueInsets>
@@ -118,7 +122,7 @@
                     <padding>
                         <Insets bottom="10" left="10" right="10" top="10" />
                     </padding>
-                    <Button fx:id="btTreinar" onAction="#onAvancar" prefWidth="100" text="Treinar" />
+                    <Button fx:id="btTreinar" onAction="#onTreinar" prefWidth="100" text="Treinar" />
                     <Button fx:id="btTestar" onAction="#onTestarEntrada" prefWidth="100" text="Testar" />
                 </HBox>
             </children>
