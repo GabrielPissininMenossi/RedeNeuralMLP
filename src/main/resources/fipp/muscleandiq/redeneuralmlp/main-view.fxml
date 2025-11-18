@@ -3,153 +3,158 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.ToggleGroup?>
-<VBox alignment="CENTER" minHeight="782.0" minWidth="778.0" spacing="20.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fipp.muscleandiq.redeneuralmlp.MainController">
+<VBox alignment="CENTER" minHeight="782" minWidth="778" spacing="20"
+      xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="fipp.muscleandiq.redeneuralmlp.MainController">
+
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
+    <!-- Títulos -->
+    <VBox alignment="CENTER" spacing="5">
+        <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="INTELIGÊNCIA ARTIFICIAL"/>
+        <Label style="-fx-font-size: 20px; -fx-text-fill: green; -fx-font-weight: bold;" text="REDES NEURAIS"/>
+    </VBox>
 
-    <TitledPane expanded="true" text="Configurar número de neurônios">
-        <GridPane hgap="15" vgap="10">
+    <!-- CONFIGURAÇÃO COMPLETA -->
+    <TitledPane expanded="true" text="Configuração da Rede Neural">
+        <HBox spacing="35" alignment="CENTER_LEFT">
             <padding>
-                <Insets bottom="10" left="10" right="10" top="10" />
+                <Insets top="15" right="15" bottom="15" left="15"/>
             </padding>
 
-            <columnConstraints>
-                <ColumnConstraints halignment="RIGHT" minWidth="150" />
-                <ColumnConstraints minWidth="100" />
-                <ColumnConstraints halignment="RIGHT" minWidth="150" />
-                <ColumnConstraints minWidth="100" />
-            </columnConstraints>
+            <!-- GRID DE CONFIGURAÇÕES -->
+            <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints halignment="RIGHT" minWidth="150"/>
+                    <ColumnConstraints minWidth="120"/>
+                    <ColumnConstraints halignment="RIGHT" minWidth="150"/>
+                    <ColumnConstraints minWidth="120"/>
+                </columnConstraints>
 
-            <Label text="Camada de Entrada:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <TextField fx:id="tfCamadaEntrada" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <Label text="Camada de Entrada:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="tfCamadaEntrada" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-            <Label text="Camada de Saída:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="tfCamadaSaida" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Label text="Camada de Saída:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="tfCamadaSaida" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-            <Label text="Camada Oculta:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-            <TextField fx:id="tfCamadaOculta" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Label text="Camada Oculta:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="tfCamadaOculta" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-            <Label text="Valor do Erro:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <TextField fx:id="tfErro" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                <Label text="Valor do Erro:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <TextField fx:id="tfErro" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
 
-            <Label text="N:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <TextField fx:id="tfN" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                <Label text="N:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <TextField fx:id="tfN" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
 
-            <Label text="Número de Iterações:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <TextField fx:id="tfNumIteracao" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-         <rowConstraints>
-            <RowConstraints />
-            <RowConstraints />
-            <RowConstraints />
-         </rowConstraints>
-        </GridPane>
+                <Label text="Número de Iterações:" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                <TextField fx:id="tfNumIteracao" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+            </GridPane>
+
+            <!-- FUNÇÃO DE TRANSFERÊNCIA À DIREITA -->
+            <VBox spacing="10"  alignment="TOP_LEFT">
+                <Label text="Função de Transferência" style="-fx-font-size: 12px;"/>
+
+                <fx:define>
+                    <ToggleGroup fx:id="grupoFuncao"/>
+                </fx:define>
+
+                <RadioButton fx:id="idLinear" selected="true" text="Linear" toggleGroup="${grupoFuncao}"/>
+                <RadioButton fx:id="idLogistica" text="Logística" toggleGroup="${grupoFuncao}"/>
+                <RadioButton fx:id="idHiperbolica" text="Hiperbólica" toggleGroup="${grupoFuncao}"/>
+            </VBox>
+
+        </HBox>
     </TitledPane>
-   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="40.0">
-      <children>
-         <VBox prefHeight="200.0" prefWidth="100.0">
-            <children>
+
+    <HBox alignment="CENTER" spacing="60">
+
+        <!-- Painel organizado dos arquivos -->
+        <VBox spacing="15" alignment="CENTER_LEFT">
+
+            <HBox spacing="12">
+                <Button fx:id="btCarregarTreino" text="Carregar Treino" onAction="#onAbrirTreino" prefWidth="150"/>
+                <TextField fx:id="tfCaminhoArquivoTreino" disable="true" prefWidth="260"/>
+            </HBox>
+
+            <HBox spacing="12">
+                <Button fx:id="btCarregarTeste" text="Carregar Teste" onAction="#onAbrirTeste" prefWidth="150"/>
+                <TextField fx:id="tfCaminhoArquivoTeste" disable="true" prefWidth="260"/>
+            </HBox>
+
+            <HBox spacing="12">
+                <Button fx:id="btCarregarTreinoTeste" text="Treino/Teste" onAction="#onAbrirTreinoTeste" prefWidth="150"/>
+                <TextField fx:id="tfCaminhoArquivoTreinoTeste" disable="true" prefWidth="260"/>
+            </HBox>
+
+        </VBox>
+
+        <!-- Botões principais -->
+        <VBox spacing="25" alignment="CENTER">
+            <Button fx:id="btTreinar" text="Treinar" onAction="#onTreinar" prefWidth="140" prefHeight="35"/>
+            <Button fx:id="btTestar" text="Testar" onAction="#onTestarEntrada" prefWidth="140" prefHeight="35"/>
+        </VBox>
+
+    </HBox>
 
 
 
-                <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="769.0" spacing="10">
-                    <padding>
-                        <Insets bottom="10" left="10" right="10" top="10" />
-                    </padding>
-                    <Button fx:id="btCarregarTreino" minHeight="-Infinity" minWidth="-Infinity" onAction="#onAbrirTreino" prefHeight="26.0" prefWidth="120.0" text="Carregar Treino" />
-                    <TextField fx:id="tfCaminhoArquivoTreino" disable="true" prefHeight="26.0" prefWidth="200.0" />
-                </HBox>
+    <TableView fx:id="tableView" prefHeight="250" VBox.vgrow="ALWAYS"/>
 
-                   <HBox alignment="CENTER_LEFT" spacing="10">
-                    <padding>
-                        <Insets bottom="10" left="10" right="10" top="10" />
-                    </padding>
-                    <Button fx:id="btCarregarTeste" minWidth="-Infinity" onAction="#onAbrirTeste" prefHeight="44.0" prefWidth="119.0" text="Carregar Teste" />
-                    <TextField fx:id="tfCaminhoArquivoTeste" disable="true" minHeight="-Infinity" minWidth="-Infinity" prefHeight="26.0" prefWidth="200.0" />
-                </HBox>
-               <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="56.0" prefHeight="100.0" prefWidth="769.0" spacing="10">
-                  <padding>
-                     <Insets bottom="10" left="10" right="10" top="10" />
-                  </padding>
-                  <children>
-                     <Button fx:id="btCarregarTreinoTeste" minHeight="-Infinity" minWidth="-Infinity" onAction="#onAbrirTreinoTeste" prefHeight="26.0" prefWidth="146.0" text="Carregar Treino/Teste" />
-                     <TextField fx:id="tfCaminhoArquivoTreinoTeste" disable="true" prefHeight="26.0" prefWidth="200.0" />
-                  </children>
-               </HBox>
-            </children>
-         </VBox>
-         <VBox prefHeight="200.0" prefWidth="100.0">
-            <children>
-            
-                      <TitledPane alignment="CENTER" expanded="true" minHeight="-Infinity" minWidth="-Infinity" text="Função de Transferência">
-                    <HBox spacing="20">
-                        <padding>
-                            <Insets bottom="10" left="10" right="10" top="10" />
-                        </padding>
-            
-                              <!-- Define o grupo -->
-                        <fx:define>
-                            <ToggleGroup fx:id="grupoFuncao" />
-                        </fx:define>
-            
-                        <RadioButton fx:id="idLinear" selected="true" text="Linear" toggleGroup="${grupoFuncao}"/>
-                        <RadioButton fx:id="idLogistica" text="Logística" toggleGroup="${grupoFuncao}" />
-                        <RadioButton fx:id="idHiperbolica" text="Hiperbólica" toggleGroup="${grupoFuncao}" />
-                     <opaqueInsets>
-                        <Insets top="20.0" />
-                     </opaqueInsets>
-                    </HBox>
-                  <opaqueInsets>
-                     <Insets left="20.0" top="50.0" />
-                  </opaqueInsets>
-                </TitledPane>
-            
-                      <HBox alignment="CENTER" spacing="50.0">
-                    <padding>
-                        <Insets bottom="10" left="10" right="10" top="10" />
-                    </padding>
-                    <Button fx:id="btTreinar" onAction="#onTreinar" prefWidth="100" text="Treinar" />
-                    <Button fx:id="btTestar" onAction="#onTestarEntrada" prefWidth="100" text="Testar" />
-                </HBox>
-            </children>
-         </VBox>
-      </children>
-   </HBox>
+    <HBox spacing="20" alignment="TOP_CENTER">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
 
-    <TableView fx:id="tableView" prefHeight="250" VBox.vgrow="ALWAYS" />
-   <HBox prefHeight="100.0" prefWidth="200.0" spacing="15.0">
-      <children>
-      
-          <LineChart fx:id="lcGrafico" prefHeight="150.0" prefWidth="393.0">
-              <xAxis>
-                  <NumberAxis side="BOTTOM" />
-              </xAxis>
-              <yAxis>
-                  <NumberAxis side="LEFT" />
-              </yAxis>
-          </LineChart>
+        <!-- GRÁFICO (ESQUERDA) -->
+        <VBox spacing="5">
+            <Label text="Convergência do Erro" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <LineChart fx:id="lcGrafico" prefHeight="150" prefWidth="390">
+                <xAxis><NumberAxis side="BOTTOM"/></xAxis>
+                <yAxis><NumberAxis side="LEFT"/></yAxis>
+            </LineChart>
+        </VBox>
 
-          <!--Fazer a tabela de confusão-->
-         <TableView fx:id="tvConfusao" prefHeight="150.0" prefWidth="311.0" />
+        <!-- MATRIZ (CENTRO) -->
+        <VBox spacing="5">
+            <Label text="Matriz de Confusão" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <TableView fx:id="tvConfusao" prefHeight="150" prefWidth="310"/>
+        </VBox>
 
-      </children>
-      <padding>
-         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-      </padding>
-   </HBox>
+        <!-- RESULTADOS (DIREITA) -->
+        <VBox spacing="10" style="-fx-border-color: #ccc; -fx-border-radius: 6; -fx-background-color: #f7f7f7; -fx-padding: 12;">
+            <Label text="Resultados" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+
+            <HBox spacing="5">
+                <Label text="Época Atual:"/>
+                <Label fx:id="lbEpocaAtual" text="0"/>
+            </HBox>
+
+            <HBox spacing="5">
+                <Label text="Erro da Época:"/>
+                <Label fx:id="lbErroEpoca" text="0.0"/>
+            </HBox>
+            <HBox spacing="5">
+                <Label text="Erro Mínimo:"/>
+                <Label fx:id="lbErroMinimo" text="0.0"/>
+            </HBox>
+            <HBox spacing="5">
+                <Label text="Erro Máximo:"/>
+                <Label fx:id="lbErroMaximo" text="0.0"/>
+            </HBox>
+            <HBox spacing="5">
+                <Label text="Acurácia:"/>
+                <Label fx:id="lbAcuracia" text="0.0%"/>
+            </HBox>
+        </VBox>
+
+    </HBox>
+
+
+
 
 </VBox>

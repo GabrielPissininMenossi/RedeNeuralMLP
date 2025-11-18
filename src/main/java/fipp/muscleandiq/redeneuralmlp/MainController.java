@@ -30,6 +30,13 @@ public class MainController {
     @FXML
     public RadioButton idHiperbolica;
 
+
+    public Label lbEpocaAtual;
+    public Label lbErroEpoca;
+    public Label lbErroMinimo;
+    public Label lbErroMaximo;
+    public Label lbAcuracia;
+
     @FXML
     private TextField tfCaminhoArquivoTreinoTeste;
     @FXML
@@ -379,6 +386,7 @@ public class MainController {
             n = Double.parseDouble(tfN.getText());
             flag = 0;
             ultimas10Epocas.clear();
+            double erroMinimo = 9999, erroMaximo = 0.0;
             while (i < epocas && erroEpoca > erroEsperado && flag != 1)
             {
 
@@ -400,14 +408,22 @@ public class MainController {
                 }
                 erroEpoca = erroTotalEpoca / entradaTreinoList.size();
                 System.out.printf("Epoca: %d Erro: %f\n",i + 1, erroEpoca);
+                if (erroEpoca > erroMaximo)
+                    erroMaximo = erroEpoca;
+                if (erroEpoca < erroMinimo)
+                    erroMinimo = erroEpoca;
 
-
-                int finalI = i;
+                int finalI = i + 1;
                 double finalErroEpoca = erroEpoca;
-
+                double finalErroMinimo = erroMinimo;
+                double finalErroMaximo = erroMaximo;
                 // Atualiza o gráfico na UI Thread
                 Platform.runLater(() -> {
                     serieErro.getData().add(new XYChart.Data<>(finalI, finalErroEpoca));
+                    lbEpocaAtual.setText(""+finalI);
+                    lbErroEpoca.setText(String.format("%.6f", finalErroEpoca));
+                    lbErroMaximo.setText(String.format("%.6f", finalErroMaximo));
+                    lbErroMinimo.setText(String.format("%.6f", finalErroMinimo));
                 });
                 adicionarEpoca(finalErroEpoca);
                 if (isPlato()) {
@@ -472,6 +488,26 @@ public class MainController {
 
         }).start();
     }
+    private double calcularAcuracia() {
+        if (matrizConfusao == null || matrizConfusao.length == 0)
+            return 0;
+
+        int acertos = 0;
+        int total = 0;
+
+        for (int i = 0; i < matrizConfusao.length; i++) {
+            for (int j = 0; j < matrizConfusao[i].length; j++) {
+                int valor = matrizConfusao[i][j];
+                total += valor;
+
+                if (i == j) { // diagonal → valores corretos
+                    acertos += valor;
+                }
+            }
+        }
+
+        return total == 0 ? 0 : (double) acertos / total;
+    }
 
     private void atualizarTabelaConfusao() {
 
@@ -484,24 +520,23 @@ public class MainController {
 
             tvConfusao.getColumns().clear();
 
-            int colunas = matrizConfusao[0].length;
+            int colunas = saidasList.size();
 
             for (int c = 0; c < colunas; c++) {
                 final int index = c;
 
                 TableColumn<int[], Integer> coluna =
-                        new TableColumn<>("C" + c);
+                        new TableColumn<>(saidasList.get(c));
 
                 coluna.setCellValueFactory(
                         data -> new SimpleIntegerProperty(
                                 data.getValue()[index]
                         ).asObject()
                 );
-
+                coluna.prefWidthProperty().bind(tvConfusao.widthProperty().divide(colunas + 0.1));
                 tvConfusao.getColumns().add(coluna);
             }
         }
-
         // Carrega linhas
         ObservableList<int[]> linhas = FXCollections.observableArrayList();
         for (int[] linha : matrizConfusao) {
@@ -528,8 +563,10 @@ public class MainController {
             i++;
         }
         exibirMatrizConfusao();
-        Platform.runLater(() -> atualizarTabelaConfusao());
-
+        Platform.runLater(() -> {
+            atualizarTabelaConfusao();
+            lbAcuracia.setText(String.format("%.2f %%", calcularAcuracia() * 100));
+        });
     }
 
     private void gerarMatrizConfusao()
@@ -718,6 +755,7 @@ public class MainController {
             lcGrafico.getData().clear();
             lcGrafico.getData().add(serieErro);
             tvConfusao.getColumns().clear();
+            inicializarValores();
             lerArquivo(file, true); //leio o arquivo
             calcularMinMaxTreino(); //calculo os mínimos e máximos
             normalizarEntradasTreino(); //normalizo as entradas
@@ -800,6 +838,7 @@ public class MainController {
             funcaoTreinada = getFuncaoAtual();
             tfN.setText("0.1");
             tvConfusao.getColumns().clear();
+            lbAcuracia.setText("0.0 %");
             desabilitarBotoes();
             treinamento();
             habilitarBotoes();
@@ -910,6 +949,7 @@ public class MainController {
             tvConfusao.getColumns().clear();
             entradaTesteList.clear();
             entradaTreinoList.clear();
+            inicializarValores();
             lerArquivoTreinoTeste(file);
             saidas = saidasList.size();
             calcularQtdeNeuroniosOcultos();
@@ -1017,6 +1057,14 @@ public class MainController {
             alert.setContentText("Erro ao ler arquivo: " + e.getMessage());
             alert.showAndWait();
         }
+    }
+    private void inicializarValores()
+    {
+        lbAcuracia.setText("0.0 %");
+        lbErroMinimo.setText("0.0");
+        lbErroMaximo.setText("0.0");
+        lbErroEpoca.setText("0.0");
+        lbEpocaAtual.setText("0");
     }
 
 }
