@@ -971,6 +971,10 @@ public class MainController {
             //limpar o conteúdo que aparece no treino e teste isolados
             tfCaminhoArquivoTeste.setText("");
             tfCaminhoArquivoTreino.setText("");
+
+            tfCamadaEntrada.setText("" + atributos);
+            tfCamadaSaida.setText("" + saidas);
+            tfCamadaOculta.setText("" + qtdeNeuroniosOcultos);
         }
     }
     private void lerArquivoTreinoTeste(File file)
