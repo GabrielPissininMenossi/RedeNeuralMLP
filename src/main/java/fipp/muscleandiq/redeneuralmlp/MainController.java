@@ -736,7 +736,6 @@ public class MainController {
     public void onAbrirTreino(ActionEvent actionEvent)
     {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(new File("D://"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
 
         File file = fileChooser.showOpenDialog(null);
@@ -775,7 +774,6 @@ public class MainController {
         if (flagTreinoCarregado == 1)
         {
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setInitialDirectory(new File("D://"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
 
             File file = fileChooser.showOpenDialog(null);
@@ -910,8 +908,6 @@ public class MainController {
     public void onAbrirTreinoTeste(ActionEvent actionEvent) {
 
         FileChooser fileChooser = new FileChooser();
-        //fileChooser.setInitialDirectory(new File("D://"));
-        fileChooser.setInitialDirectory(new File("/home/gabriel/Documents/faculdade/facul-6t/IA 1 - Inteligencia Artificial 1/bimestre2/RedeNeural/RedeNeuralMLP/src/main/resources/arquivos"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
         File file = fileChooser.showOpenDialog(null);
         if (file != null) {
