@@ -480,7 +480,7 @@ public class MainController {
 
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Sucesso");
+                alert.setTitle("Sistema");
                 alert.setHeaderText("Finalizado");
                 alert.setContentText("Treinamento Realizado");
                 alert.showAndWait();
@@ -737,9 +737,11 @@ public class MainController {
     public void onAbrirTreino(ActionEvent actionEvent)
     {
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File("D://"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
 
         File file = fileChooser.showOpenDialog(null);
+
         if (file != null)
         {
             if(flagTreinoTesteCarregado == 1)
@@ -774,6 +776,7 @@ public class MainController {
         if (flagTreinoCarregado == 1)
         {
             FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialDirectory(new File("D://"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
 
             File file = fileChooser.showOpenDialog(null);
@@ -908,6 +911,7 @@ public class MainController {
     public void onAbrirTreinoTeste(ActionEvent actionEvent) {
 
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File("D://"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
         File file = fileChooser.showOpenDialog(null);
         if (file != null) {
