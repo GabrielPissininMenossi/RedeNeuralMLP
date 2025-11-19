@@ -14,9 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -977,10 +975,16 @@ public class MainController {
             tfCamadaOculta.setText("" + qtdeNeuroniosOcultos);
         }
     }
+    private void embaralharCSV(File file) throws FileNotFoundException {
+        RandomAccessFile arquivo = new RandomAccessFile(file.getAbsolutePath(), "rw");
+
+    }
     private void lerArquivoTreinoTeste(File file)
     {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
+            embaralharCSV(file);
+
             String linha = br.readLine();
             String[] cabecalho = linha.split(",");
 
