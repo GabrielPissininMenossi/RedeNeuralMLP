@@ -74,8 +74,6 @@ Abaixo a explicação de como executar o programa.
 
     - Interromper o treinamento imediatamente.
 
-      Essas opções permitem melhor controle sobre o processo de otimização.
-
 🧪 4. Testar a Rede
 
 - Após treinar a rede, você poderá realizar testes com os dados de teste.
@@ -88,7 +86,7 @@ Abaixo a explicação de como executar o programa.
 
     - Ter realizado o treinamento previamente.
 
-  - Se você alterar a função de transferência, não poderá testar com essa nova função até treinar novamente usando ela.
+  - Se você alterar a função de transferência, não poderá TESTAR com essa nova função até TREINAR novamente usando ela.
 
 🔄 5. Mudança de Função de Transferência
 
