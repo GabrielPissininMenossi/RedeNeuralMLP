@@ -18,6 +18,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 public class MainController {
@@ -909,7 +910,8 @@ public class MainController {
     public void onAbrirTreinoTeste(ActionEvent actionEvent) {
 
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(new File("D://"));
+        //fileChooser.setInitialDirectory(new File("D://"));
+        fileChooser.setInitialDirectory(new File("/home/gabriel/Documents/faculdade/facul-6t/IA 1 - Inteligencia Artificial 1/bimestre2/RedeNeural/RedeNeuralMLP/src/main/resources/arquivos"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
         File file = fileChooser.showOpenDialog(null);
         if (file != null) {
@@ -975,15 +977,30 @@ public class MainController {
             tfCamadaOculta.setText("" + qtdeNeuroniosOcultos);
         }
     }
-    private void embaralharCSV(File file) throws FileNotFoundException {
-        RandomAccessFile arquivo = new RandomAccessFile(file.getAbsolutePath(), "rw");
+    private void embaralharEntradas(List<Entrada> entradas)
+    {
+        int pos;
+        Entrada aux;
+        Random random = new Random();
+        //random.nextInt(entradas.size());
+        for(int i=0; i<entradas.size(); i++)
+        {
+            pos = random.nextInt(entradas.size());
 
+            aux = entradas.get(i);
+            entradas.set(i, entradas.get(pos));
+            entradas.set(pos, aux);
+        }
+
+        for(Entrada e: entradas)
+        {
+            System.out.println(e.getClasse());
+        }
     }
     private void lerArquivoTreinoTeste(File file)
     {
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
-            embaralharCSV(file);
 
             String linha = br.readLine();
             String[] cabecalho = linha.split(",");
@@ -1044,6 +1061,9 @@ public class MainController {
                 linha = br.readLine(); //sai lido
             }
             br.close();
+
+            //embaralhar as entradas
+            embaralharEntradas(todasEntradas);
 
             // 3) SEPARAÇÃO TREINO / TESTE
             int total = todasEntradas.size();
